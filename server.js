@@ -37,7 +37,7 @@ const database = [
 
 app.get("/", function(req,res){
   //this route can send out json
-  res.json(obj);
+  res.json(database[0]);
 })
 
 app.listen(3000, () =>{
