@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const app = express();
 
 app.use(cors());
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 
 const database = [
@@ -39,6 +40,32 @@ app.get("/", function(req,res){
   //this route can send out json
   res.json(database[0]);
 })
+
+app.post("/signin", (req,res) =>{
+  const {email, password} = req.body;
+
+  database[0].email === email && database[0].password===password
+  ? res.json(database[0])
+  : res.status(400).json("Error Signing In, Check Email or Password");
+});
+
+app.post("/register", (req,res) =>{
+  const {email, password, name} = req.body;
+
+  if(email && password){
+    const newUser = {
+      email,
+      password,
+      name,
+      list:[],
+    }
+    database.push(newUser);
+    console.log(database);
+    res.json(newUser);
+  }else{
+    res.status(400).json("Please Enter Both Email and Password in Register Form");
+  }
+});
 
 app.listen(3000, () =>{
   console.log("Server is listening");
