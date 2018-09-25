@@ -1,9 +1,20 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
+const knex = require('knex')({
+  client: 'pg',
+  connection: {
+    host : 'localhost',
+    user : 'postgres',
+    password : 'password',
+    database : 'listmakerai'
+  }
+});
 
 const app = express();
 
+//Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
@@ -36,8 +47,25 @@ const database = [
 ]
 
 
+// console.log("here");
+// knex('logins')
+//   .where({ email: 'fdsa' })
+//   .then(console.log);
+
+
+// const saltRounds = 10;
+// const myPlaintextPassword = 's0/\/\P4$$w0rD';
+// bcrypt.hash(myPlaintextPassword, saltRounds, function(err, hash) {
+//   console.log(hash);
+//   bcrypt.compare(myPlaintextPassword, hash, function(err, res) {
+//     // res == true
+//     if(res){
+//       console.log("yeeboi it worked");
+//     }
+//   });
+// });
+
 app.get("/", function(req,res){
-  //this route can send out json
   res.json(database[0]);
 })
 
@@ -47,25 +75,39 @@ app.post("/signin", (req,res) =>{
   database[0].email === email && database[0].password===password
   ? res.json(database[0])
   : res.status(400).json("Error Signing In, Check Email or Password");
+
+
+
 });
 
 app.post("/register", (req,res) =>{
   const {email, password, name} = req.body;
 
   if(email && password){
-    const newUser = {
-      email,
-      password,
-      name,
-      list:[],
-    }
-    database.push(newUser);
-    console.log(database);
-    res.json(newUser);
+    bcrypt.hash(password, 10, function(err,hash){
+      console.log(hash);
+      knex("logins").insert({
+        email,
+        hash,
+      })
+      .returning("*")
+      .then(returningUser => {
+          res.json(returningUser[0]);
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(400).json("Error Registering User, Please Try Again");
+      });
+    });
+
   }else{
     res.status(400).json("Please Enter Both Email and Password in Register Form");
   }
 });
+
+app.get("/analyze", (req,res) =>{
+  res.json("analyze route");
+})
 
 app.listen(3000, () =>{
   console.log("Server is listening");
