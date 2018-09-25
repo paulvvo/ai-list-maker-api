@@ -72,12 +72,19 @@ app.get("/", function(req,res){
 app.post("/signin", (req,res) =>{
   const {email, password} = req.body;
 
-  database[0].email === email && database[0].password===password
-  ? res.json(database[0])
-  : res.status(400).json("Error Signing In, Check Email or Password");
-
-
-
+  knex("logins").where({email})
+  .then(foundUser => {
+    if(foundUser[0]){
+      bcrypt.compare(foundUser[0].hash, password, function(err,results){
+        if(err){
+          res.status(400).json("Failed to Login, Please Try Again [Code:Compara]")
+        }
+        res.json(foundUser[0]);
+      })
+    }else{
+      res.status(400).json("Failed to Login, Please Try Again [Code:!Select]");
+    }
+  });
 });
 
 app.post("/register", (req,res) =>{
