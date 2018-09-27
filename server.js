@@ -34,10 +34,12 @@ app.get("/", function(req,res){
 
 app.post("/signin", (req,res) =>{
   const {email, password} = req.body;
-                        //email:email
-  knex("logins").where({email:email})
-  .then(foundUser => {
+  // console.log(req.body);
+  // console.log(email);
+  // console.log(password);
 
+  knex("logins").where({email})
+  .then(foundUser => {
 
     if(foundUser[0] && foundUser.length >0){
       bcrypt.compare(password, foundUser[0].hash, function(err,result){
@@ -65,8 +67,6 @@ app.post("/register", (req,res) =>{
 
     bcrypt.hash(password, 10, function(err,hash){
       // console.log(hash);
-
-
       knex.transaction(trx => {
         trx("logins").insert({
           email,
@@ -80,7 +80,7 @@ app.post("/register", (req,res) =>{
             detecteditems: JSON.stringify([])
           })
           .returning("*")
-          .then(returningUser => res.json(returningUser));
+          .then(returningUser => res.json(returningUser[0]));
         })
         .then(trx.commit)
         .catch(trx.rollback)
@@ -89,18 +89,14 @@ app.post("/register", (req,res) =>{
         console.log(err);
         res.status(400).json("Error Registering User, Please Try Again");
       });
-
-
-
-
     });
-
   }else{
     res.status(400).json("Please Enter Both Email and Password in Register Form");
   }
 });
 
 app.post("/urlInputAnalyze", (req,res) =>{
+  console.log(req.body.urlInput);
   clarifaiApp.models
   .predict("aaa03c23b3724a16a56b629203edc62c", req.body.urlInput)
   .then(response => {
