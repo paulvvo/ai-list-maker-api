@@ -101,17 +101,6 @@ app.post("/urlInputAnalyze", (req,res) =>{
   clarifaiApp.models
   .predict("aaa03c23b3724a16a56b629203edc62c", req.body.urlInput)
   .then(response => {
-      //insert into users(urlInput, detecteditems) values("fdas", [{"fds":"fds"},{"fd"}])
-      // knex('books')
-      // .where('published_date', '<', 2000)
-      // .update({
-      //   status: 'archived',
-      //   thisKeyIsSkipped: undefined
-      // })
-      // Outputs:
-      // update `books` set `status` = 'archived' where `published_date` < 2000
-      //
-      //
       knex("users")
       .where({
         email:req.body.email
@@ -121,17 +110,14 @@ app.post("/urlInputAnalyze", (req,res) =>{
         detecteditems:JSON.stringify(response.outputs[0].data.concepts),
         thisKeyIsSkipped: undefined
       })
-      .returning("*")
-      .then(console.log);
-
-
+      .then(response => console.log("Updated URL Input and Items List Successful"))
+      .catch(err => res.status(400).json("Error Updating URL Input and Items List"));
       res.json(response);
-
-  });
+  })
+  .catch(err => res.status(400).json("Fail Clarifai API Call"));
 })
 
 app.put("/itemList", (req,res) =>{
-
 
   knex("users")
   .where({email:req.body.email})
