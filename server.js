@@ -97,14 +97,52 @@ app.post("/register", (req,res) =>{
 
 app.post("/urlInputAnalyze", (req,res) =>{
   console.log(req.body.urlInput);
+  console.log(req.body.email);
   clarifaiApp.models
   .predict("aaa03c23b3724a16a56b629203edc62c", req.body.urlInput)
   .then(response => {
+      //insert into users(urlInput, detecteditems) values("fdas", [{"fds":"fds"},{"fd"}])
+      // knex('books')
+      // .where('published_date', '<', 2000)
+      // .update({
+      //   status: 'archived',
+      //   thisKeyIsSkipped: undefined
+      // })
+      // Outputs:
+      // update `books` set `status` = 'archived' where `published_date` < 2000
+      //
+      //
+      knex("users")
+      .where({
+        email:req.body.email
+      })
+      .update({
+        urlinput:req.body.urlInput,
+        detecteditems:JSON.stringify(response.outputs[0].data.concepts),
+        thisKeyIsSkipped: undefined
+      })
+      .returning("*")
+      .then(console.log);
+
+
       res.json(response);
+
   });
 })
 
+app.put("/itemList", (req,res) =>{
 
+
+  knex("users")
+  .where({email:req.body.email})
+  .update({
+    detecteditems:JSON.stringify(req.body.detectedItems),
+    thisKeyIsSkipped: undefined
+  })
+  .then(response => res.json("Update Successfully"))
+  .catch(err => res.json("Failed To Update"));
+
+});
 
 
 
