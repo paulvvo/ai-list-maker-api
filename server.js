@@ -13,10 +13,12 @@ const itemList = require("./controllers/itemList");
 const knex = require('knex')({
   client: 'pg',
   connection: {
-    host : 'localhost',
-    user : 'postgres',
-    password : 'password',
-    database : 'listmakerai'
+    connectionString: process.env.DATABASE_URL,
+    ssl: true
+    // host : 'localhost',
+    // user : 'postgres',
+    // password : 'password',
+    // database : 'listmakerai'
   }
 });
 
